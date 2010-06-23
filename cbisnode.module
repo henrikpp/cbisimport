@@ -53,7 +53,41 @@ function cbisnode_nodeapi(&$node, $op, $a3=Null, $page=Null) {
       }
       return $data;
       break;
+    // Show the node and any additional attributes it might have from cbis
+    case 'view':
+      $node->content['body']['#value'] = _cbisnode_show_all_attributes($node->content['field_teaser']['field']['#node']->cbis_product['data']['Attributes']);
+      return $node;
+      break;
   }
+}
+
+/**
+ * loop through additional CBIS attributes and output them in the view state of the node
+ *
+ * @param array $attr
+ * @return string
+ */
+function _cbisnode_show_all_attributes($attr) {
+  //move description to the front of the array
+  array_unshift($attr, $attr['Description']);
+
+  //remove previously displayed text
+  unset($attr['Description']);
+  unset($attr['Introduction']);
+
+  //loop through attributes array
+  foreach($attr as $item) {
+    if(is_string($item)) {
+      if(filter_var($item, FILTER_VALIDATE_EMAIL)) {
+        $out .= '<div class="'.$item.'"><a href="mailto:'.$item.'">' . $item . '</a></div>';
+      } elseif (filter_var($item, FILTER_VALIDATE_URL)) {
+        $out .= '<div class="'.$item.'"><a href="'.$item.'">' . $item . '</a></div>';
+      } else {
+        $out .= '<div class="'.$item.'">' . $item . '</div>';
+      }
+    }
+  }
+  return $out;
 }
 
 /**
